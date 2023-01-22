@@ -11,6 +11,7 @@ export const PageNumbers = ({ pages, getNextPage, pageNo }: PropTypes) => {
     <div className="flex gap-4 mt-8">
       {pages.map((pg) => (
         <span
+          key={pg}
           onClick={() => {
             getNextPage(pg + 1);
           }}

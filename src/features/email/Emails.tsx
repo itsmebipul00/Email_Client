@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import classNames from "classnames";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
+import { SkeletonTheme } from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+
 import {
   getEmails,
   getEmailBody,
@@ -12,6 +15,8 @@ import { Filters } from "../../Components/Filters";
 import { EmailCard } from "../../Components/EmailCard";
 import { EmailBody } from "../../Components/EmailBody";
 import { PageNumbers } from "../../Components/PageNumbers";
+import { NoEmails } from "../../Components/NoEmails";
+import Skeleton from "react-loading-skeleton";
 
 export function Emails() {
   const emails = useAppSelector((state) => state.email);
@@ -86,40 +91,59 @@ export function Emails() {
   const favrouiteEmailIds = emails?.favouriteEmails?.map((email) => email.id);
 
   return (
-    <div className="w-[100vw] min-h-screen bg-[#F3F6FA] p-8 ">
-      <Filters handleFilter={handleFilter} filterType={filterType} />
+    <SkeletonTheme
+      baseColor="#ffffff"
+      highlightColor="#ecf2f9"
+      borderRadius="8px"
+    >
+      <div className="w-[100vw] min-h-screen bg-[#F3F6FA] p-8 ">
+        <Filters handleFilter={handleFilter} filterType={filterType} />
 
-      <div className="flex gap-10">
-        <section
-          className={classNames("flex flex-col gap-8", {
-            "w-[40%]": selectedEmail,
-            "w-full": !selectedEmail,
-          })}
-        >
-          {filteredEmails?.map((email) => {
-            return (
-              <EmailCard
-                email={email}
-                selectedEmail={selectedEmail}
-                handleEmailClick={handleEmailClick}
-                favrouiteEmailIds={favrouiteEmailIds}
-              />
-            );
-          })}
-        </section>
+        <div className="flex gap-10">
+          <section
+            className={classNames("flex flex-col gap-8", {
+              "w-[40%]": selectedEmail,
+              "w-full": !selectedEmail,
+            })}
+          >
+            {emails?.loading ? (
+              <div className="h-20">
+                <Skeleton count={5} duration={5} />
+              </div>
+            ) : (filteredEmails?.length as number) > 0 ? (
+              filteredEmails?.map((email) => {
+                return (
+                  <EmailCard
+                    email={email}
+                    selectedEmail={selectedEmail}
+                    handleEmailClick={handleEmailClick}
+                    favrouiteEmailIds={favrouiteEmailIds}
+                    key={email.id}
+                  />
+                );
+              })
+            ) : (
+              <NoEmails />
+            )}
+          </section>
 
-        {selectedEmail && (
-          <EmailBody
-            selectedEmail={selectedEmail}
-            handleFavouriteClick={handleFavouriteClick}
-            favrouiteEmailIds={favrouiteEmailIds}
-            emailBody={emails.emailBody}
+          {selectedEmail && (
+            <EmailBody
+              selectedEmail={selectedEmail}
+              handleFavouriteClick={handleFavouriteClick}
+              favrouiteEmailIds={favrouiteEmailIds}
+              emailBody={emails.emailBody}
+            />
+          )}
+        </div>
+        {filterType === "unread" && (filteredEmails?.length as number) > 0 && (
+          <PageNumbers
+            pages={pages}
+            getNextPage={getNextPage}
+            pageNo={pageNo}
           />
         )}
       </div>
-      {filterType === "unread" && (
-        <PageNumbers pages={pages} getNextPage={getNextPage} pageNo={pageNo} />
-      )}
-    </div>
+    </SkeletonTheme>
   );
 }
